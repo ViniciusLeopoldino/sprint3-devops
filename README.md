@@ -92,7 +92,7 @@ Siga os passos abaixo no seu terminal local (PowerShell recomendado) para implan
 ### Passo 1: Clone o Repositório
 ```powershell
 git clone https://github.com/ViniciusLeopoldino/sprint3-devops.git
-cd mottu-control
+cd sprint3-devops
 ```
 
 ### Passo 2: Execute o Script de Deploy Completo

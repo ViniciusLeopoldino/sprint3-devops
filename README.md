@@ -102,18 +102,18 @@ O script a seguir automatiza todo o processo. Copie o bloco inteiro, cole no seu
 
 ```powershell
 # ===================================================================
-# ROTEIRO COM POSTGRESQL
+# ROTEIRO COMPLETO COM POSTGRESQL
 # ===================================================================
 
 # ----- Bloco de Variáveis (AJUSTE AS CONFIGURAÇÕES DE NOME UNICO E SENHA) -----
 $env:RESOURCE_GROUP="rg-mottu-fiap"
 $env:LOCATION="brazilsouth"
-$env:ACR_NAME="acrmottu<seu-nome-unico>" # Ex: acrmottu2025
+$env:ACR_NAME="acrmottucontrol557047" 
 $env:APP_CONTAINER_NAME="java-app-mottu"
 $env:POSTGRES_CONTAINER_NAME = "postgres-db-mottu"
 $env:POSTGRES_DB = "mottudb"
 $env:POSTGRES_USER = "mottuadmin"
-$env:POSTGRES_PASSWORD = "SuaSenhaForte123" # <-- INCLUIR A SENHA AQUI
+$env:POSTGRES_PASSWORD = "mottu280595"
 
 # ----- PASSO 1: Criar Recursos Base -----
 Write-Host "Criando Grupo de Recursos e Azure Container Registry..."

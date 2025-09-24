@@ -30,7 +30,7 @@ O fluxo da solução segue as práticas modernas de DevOps e Cloud Computing:
 |  Desenvolvedor|----->|     GitHub     |----->|      Azure       |
 |               |      | (Código Fonte) |      | (Nuvem/Cloud)    |
 +---------------+      +----------------+      +------------------+
-      |                                                |
+      |                                              |
       | 1. Desenvolve o código e o Dockerfile          | 5. Executa os scripts de deploy (ACI)
       | 2. Envia para o GitHub (push)                  |
       |                                                V
@@ -66,7 +66,6 @@ O fluxo da solução segue as práticas modernas de DevOps e Cloud Computing:
                                 |  (Testes)   |
                                 +-------------+
 ```
-**Funcionamento:** O código-fonte, versionado no GitHub, é usado para construir uma imagem Docker que é armazenada no ACR. Em seguida, via scripts de linha de comando, dois containers são provisionados no ACI: um para o banco de dados PostgreSQL e outro para a aplicação Java, que se conecta ao banco.
 
 ## 4. Tecnologias Utilizadas
 
@@ -85,120 +84,139 @@ Para realizar o deploy desta solução, você precisará ter as seguintes ferram
 * Docker Desktop (em execução)
 * Azure CLI (logado com `az login`)
 
-## 6. Guia de Deploy Passo a Passo
+## 6. Guia de Deploy e Teste
 
-Siga os passos abaixo no seu terminal local (PowerShell recomendado) para implantar a solução completa na Azure.
+Siga os passos abaixo para implantar e testar a solução.
 
 ### Passo 1: Clone o Repositório
 ```powershell
-git clone https://github.com/ViniciusLeopoldino/sprint3-devops.git
-cd sprint3-devops
+git clone <URL_DO_SEU_REPOSITORIO>
+cd mottu-control
 ```
 
-### Passo 2: Execute o Script de Deploy Completo
-O script a seguir automatiza todo o processo. Copie o bloco inteiro, **substitua o valor da variável `$env:POSTGRES_PASSWORD` pela sua senha escolhida** e execute no seu terminal PowerShell.
+### Passo 2: Execute o Script de Deploy
+O script a seguir automatiza a criação de toda a infraestrutura. Copie o bloco inteiro, **substitua o valor da variável `$env:POSTGRES_PASSWORD` pela sua senha escolhida** e execute no seu terminal PowerShell.
 
 ```powershell
 # ===================================================================
 # ROTEIRO DE DEPLOY - PROJETO MOTTU CONTROL
 # ===================================================================
 
-# ----- Bloco de Variáveis (configure a senha aqui) -----
+# ----- Bloco de Variáveis -----
 $env:RESOURCE_GROUP="rg-mottu-fiap"
 $env:LOCATION="brazilsouth"
-$env:ACR_NAME="acrmottucontrol557047" # <-- atualize o nome do ACR aqui
+$env:ACR_NAME="acrmottucontrol557047" 
 $env:APP_CONTAINER_NAME="java-app-mottu"
 $env:POSTGRES_CONTAINER_NAME = "postgres-db-mottu"
 $env:POSTGRES_DB = "mottudb"
 $env:POSTGRES_USER = "mottuadmin"
-$env:POSTGRES_PASSWORD = "mottu280595" # <-- inclua sua senha aqui
+$env:POSTGRES_PASSWORD = "mottu280595"
 
-# ----- PASSO 1: Criar Recursos Base -----
+# ----- 1. Criar Recursos Base -----
 Write-Host "Criando Grupo de Recursos e Azure Container Registry..."
 az group create --name $env:RESOURCE_GROUP --location $env:LOCATION
 az acr create --resource-group $env:RESOURCE_GROUP --name $env:ACR_NAME --sku Basic --admin-enabled true
 
-# ----- PASSO 2: Fazer Build e Push da Imagem da Aplicação -----
+# ----- 2. Fazer Build e Push da Imagem da Aplicação -----
 Write-Host "Fazendo login, build e push da imagem Docker..."
 az acr login --name $env:ACR_NAME
 docker build -t "$($env:ACR_NAME).azurecr.io/mottu-control:v1" .
 docker push "$($env:ACR_NAME).azurecr.io/mottu-control:v1"
 
-# ----- PASSO 3: Criar o Container do PostgreSQL -----
+# ----- 3. Criar o Container do PostgreSQL -----
 Write-Host "Criando o container do PostgreSQL..."
 az container create --resource-group $env:RESOURCE_GROUP --name $env:POSTGRES_CONTAINER_NAME --image postgres:15 --os-type Linux --ports 5432 --cpu 1 --memory 1.5 --environment-variables "POSTGRES_DB=$($env:POSTGRES_DB)" "POSTGRES_USER=$($env:POSTGRES_USER)" "POSTGRES_PASSWORD=$($env:POSTGRES_PASSWORD)" --dns-name-label postgres-mottu-$($env:ACR_NAME)
 
-# ----- PASSO 4: Aguardar e Obter o IP do Banco de Dados -----
+# ----- 4. Aguardar e Obter o IP do Banco de Dados -----
 Write-Host "Aguardando 60 segundos para o PostgreSQL iniciar..."
 Start-Sleep -Seconds 60
 $POSTGRES_IP = $(az container show --resource-group $env:RESOURCE_GROUP --name $env:POSTGRES_CONTAINER_NAME --query ipAddress.ip --output tsv)
 Write-Host "IP do PostgreSQL obtido: $POSTGRES_IP"
 
-# ----- PASSO 5: Criar o Container da Aplicação -----
+# ----- 5. Criar o Container da Aplicação -----
 $DB_URL = "jdbc:postgresql://$($POSTGRES_IP):5432/$($env:POSTGRES_DB)"
 $ACR_PASSWORD = $(az acr credential show --name $env:ACR_NAME --query "passwords[0].value" --output tsv)
 
 Write-Host "Criando o container da aplicação Java..."
 az container create --resource-group $env:RESOURCE_GROUP --name $env:APP_CONTAINER_NAME --image "$($env:ACR_NAME).azurecr.io/mottu-control:v1" --os-type Linux --ports 8080 --cpu 1 --memory 1.5 --registry-username $env:ACR_NAME --registry-password $ACR_PASSWORD --environment-variables "DB_URL=$($DB_URL)" "DB_USER=$($env:POSTGRES_USER)" "DB_PASSWORD=$($env:POSTGRES_PASSWORD)" --dns-name-label app-mottu-$($env:ACR_NAME)
 
-# ----- PASSO 6: Obter IP da Aplicação e Finalizar -----
-Write-Host "Aguardando 90 segundos para a aplicação iniciar (incluindo o 'sleep' interno)..."
-Start-Sleep -Seconds 90
-$APP_IP = $(az container show --resource-group $env:RESOURCE_GROUP --name $env:APP_CONTAINER_NAME --query ipAddress.ip --output tsv)
-Write-Host "🚀 Aplicação pronta! Acesse em: http://$APP_IP:8080/api/mos"
+# ----- 6. Mensagem de Conclusão -----
+Write-Host "------------------------------------------------------------"
+Write-Host "✅ Infraestrutura implantada com sucesso!"
+Write-Host "Aguarde cerca de 2 minutos para a aplicação iniciar completamente antes de obter o IP."
+Write-Host "------------------------------------------------------------"
 ```
+
+### Passo 3: Obtenha os IPs e Inicie os Testes
+
+Após o script acima terminar, aguarde 2 minutos e execute os comandos abaixo para obter os IPs públicos dos seus containers.
+
+**Obter IP da Aplicação (API):**
+```powershell
+$APP_IP = $(az container show --resource-group $env:RESOURCE_GROUP --name $env:APP_CONTAINER_NAME --query ipAddress.ip --output tsv)
+Write-Host "URL da API para usar no Postman: http://$APP_IP:8080/api/motos"
+```
+
+**Obter IP do Banco de Dados (PostgreSQL):**
+```powershell
+$POSTGRES_IP = $(az container show --resource-group $env:RESOURCE_GROUP --name $env:POSTGRES_CONTAINER_NAME --query ipAddress.ip --output tsv)
+Write-Host "IP do Banco de Dados para usar no DBeaver: $POSTGRES_IP"
+```
+
+Agora, use esses IPs para testar sua solução conforme descrito nas seções abaixo.
 
 ## 7. Acessando o Banco de Dados (PostgreSQL)
 
-Após a execução bem-sucedida do script de deploy, o container do banco de dados PostgreSQL estará acessível publicamente. Você pode usar uma ferramenta como o DBeaver ou pgAdmin para se conectar e verificar os dados diretamente.
-
-Para obter o IP do banco de dados, você pode pegá-lo do output do script ou executar o seguinte comando a qualquer momento:
-
-```powershell
-az container show --resource-group $env:RESOURCE_GROUP --name $env:POSTGRES_CONTAINER_NAME --query ipAddress.ip --output tsv
-```
-
-**Use os seguintes dados para a conexão:**
-
-* **Host/Servidor:** `<IP_DO_BANCO_OBTIDO_ACIMA>`
+Use uma ferramenta como o **DBeaver** ou pgAdmin para se conectar ao banco.
+* **Host/Servidor:** O IP obtido no Passo 3.
 * **Porta:** `5432`
-* **Banco de Dados:** `mottudb` (valor da variável `$env:POSTGRES_DB`)
-* **Usuário:** `mottuadmin` (valor da variável `$env:POSTGRES_USER`)
-* **Senha:** A senha que você definiu na variável `$env:POSTGRES_PASSWORD`.
+* **Banco de Dados:** `mottudb`
+* **Usuário:** `mottuadmin`
+* **Senha:** A senha que você definiu no script.
 
-## 8. Como Testar a API
+## 8. Como Testar a API com o Postman
 
-Após a execução do script de deploy, a URL da sua API será exibida no final. Use essa URL para realizar os testes abaixo com `curl` ou Postman.
+Use a URL da API retornada no Passo 3 para montar as requisições no Postman.
 
-(Substitua `<IP_DA_SUA_APP>` pelo IP real da sua aplicação)
+---
+### **CREATE (POST)** - Criar uma nova moto
+* **Método:** `POST`
+* **URL:** `http://<IP_DA_SUA_APP>:8080/api/motos`
+* **Corpo (Body):** `raw`, `JSON`
+    ```json
+    {
+      "modelo": "Honda Pop 110i",
+      "placa": "BRA2E19",
+      "ano": 2025
+    }
+    ```
+* **Resultado Esperado:** Status `201 Created`.
 
-### CREATE (POST)
-Cria uma nova moto.
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{"modelo": "Honda Pop 110i", "placa": "BRA2E19", "ano": 2025}' http://<IP_DA_SUA_APP>:8080/api/motos
-```
+---
+### **READ (GET)** - Listar todas as motos
+* **Método:** `GET`
+* **URL:** `http://<IP_DA_SUA_APP>:8080/api/motos`
+* **Resultado Esperado:** Status `200 OK`.
 
-### READ (GET)
-Lista todas as motos.
-```bash
-curl http://<IP_DA_SUA_APP>:8080/api/motos
-```
-Busca uma moto pelo ID.
-```bash
-curl http://<IP_DA_SUA_APP>:8080/api/motos/1
-```
+---
+### **UPDATE (PUT)** - Atualizar uma moto
+* **Método:** `PUT`
+* **URL:** `http://<IP_DA_SUA_APP>:8080/api/motos/1` (substitua `1` por um ID existente)
+* **Corpo (Body):** `raw`, `JSON`
+    ```json
+    {
+      "modelo": "Honda Pop 110i EX",
+      "placa": "BRA2E19",
+      "ano": 2026
+    }
+    ```
+* **Resultado Esperado:** Status `200 OK`.
 
-### UPDATE (PUT)
-Atualiza a moto com o ID especificado.
-```bash
-curl -X PUT -H "Content-Type: application/json" -d '{"modelo": "Honda Pop 110i EX", "placa": "BRA2E19", "ano": 2026}' http://<IP_DA_SUA_APP>:8080/api/motos/1
-```
-
-### DELETE
-Remove a moto com o ID especificado.
-```bash
-curl -X DELETE http://<IP_DA_SUA_APP>:8080/api/motos/1
-```
+---
+### **DELETE** - Remover uma moto
+* **Método:** `DELETE`
+* **URL:** `http://<IP_DA_SUA_APP>:8080/api/motos/1` (substitua `1` por um ID existente)
+* **Resultado Esperado:** Status `204 No Content`.
 
 ## 9. Autor
 

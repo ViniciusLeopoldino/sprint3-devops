@@ -96,24 +96,22 @@ cd sprint3-devops
 ```
 
 ### Passo 2: Execute o Script de Deploy Completo
-O script a seguir automatiza todo o processo. Copie o bloco inteiro, cole no seu terminal e execute.
-
-**Atenção:** Lembre-se de trocar o valor da variável `$env:POSTGRES_PASSWORD` por uma senha forte de sua escolha.
+O script a seguir automatiza todo o processo. Copie o bloco inteiro, **substitua o valor da variável `$env:POSTGRES_PASSWORD` pela sua senha escolhida** e execute no seu terminal PowerShell.
 
 ```powershell
 # ===================================================================
-# ROTEIRO COMPLETO COM POSTGRESQL
+# ROTEIRO DE DEPLOY - PROJETO MOTTU CONTROL
 # ===================================================================
 
-# ----- Bloco de Variáveis (AJUSTE AS CONFIGURAÇÕES DE NOME UNICO E SENHA) -----
+# ----- Bloco de Variáveis (configure a senha aqui) -----
 $env:RESOURCE_GROUP="rg-mottu-fiap"
 $env:LOCATION="brazilsouth"
-$env:ACR_NAME="acrmottucontrol557047" 
+$env:ACR_NAME="acrmottucontrol557047" # <-- atualize o nome do ACR aqui
 $env:APP_CONTAINER_NAME="java-app-mottu"
 $env:POSTGRES_CONTAINER_NAME = "postgres-db-mottu"
 $env:POSTGRES_DB = "mottudb"
 $env:POSTGRES_USER = "mottuadmin"
-$env:POSTGRES_PASSWORD = "mottu280595"
+$env:POSTGRES_PASSWORD = "mottu280595" # <-- inclua sua senha aqui
 
 # ----- PASSO 1: Criar Recursos Base -----
 Write-Host "Criando Grupo de Recursos e Azure Container Registry..."
@@ -147,10 +145,28 @@ az container create --resource-group $env:RESOURCE_GROUP --name $env:APP_CONTAIN
 Write-Host "Aguardando 90 segundos para a aplicação iniciar (incluindo o 'sleep' interno)..."
 Start-Sleep -Seconds 90
 $APP_IP = $(az container show --resource-group $env:RESOURCE_GROUP --name $env:APP_CONTAINER_NAME --query ipAddress.ip --output tsv)
-Write-Host "🚀 Aplicação pronta! Acesse em: http://$APP_IP:8080/api/motos"
+Write-Host "🚀 Aplicação pronta! Acesse em: http://$APP_IP:8080/api/mos"
 ```
 
-## 7. Como Testar a API
+## 7. Acessando o Banco de Dados (PostgreSQL)
+
+Após a execução bem-sucedida do script de deploy, o container do banco de dados PostgreSQL estará acessível publicamente. Você pode usar uma ferramenta como o DBeaver ou pgAdmin para se conectar e verificar os dados diretamente.
+
+Para obter o IP do banco de dados, você pode pegá-lo do output do script ou executar o seguinte comando a qualquer momento:
+
+```powershell
+az container show --resource-group $env:RESOURCE_GROUP --name $env:POSTGRES_CONTAINER_NAME --query ipAddress.ip --output tsv
+```
+
+**Use os seguintes dados para a conexão:**
+
+* **Host/Servidor:** `<IP_DO_BANCO_OBTIDO_ACIMA>`
+* **Porta:** `5432`
+* **Banco de Dados:** `mottudb` (valor da variável `$env:POSTGRES_DB`)
+* **Usuário:** `mottuadmin` (valor da variável `$env:POSTGRES_USER`)
+* **Senha:** A senha que você definiu na variável `$env:POSTGRES_PASSWORD`.
+
+## 8. Como Testar a API
 
 Após a execução do script de deploy, a URL da sua API será exibida no final. Use essa URL para realizar os testes abaixo com `curl` ou Postman.
 
@@ -184,7 +200,7 @@ Remove a moto com o ID especificado.
 curl -X DELETE http://<IP_DA_SUA_APP>:8080/api/motos/1
 ```
 
-## 8. Equipe
+## 9. Autor
 
 * **Vinicius Leopoldino de Oliveira** - RM 557047
 * **Pablo Lopes Doria de Andrade** - RM 556834

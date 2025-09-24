@@ -186,7 +186,6 @@ curl -X DELETE http://<IP_DA_SUA_APP>:8080/api/motos/1
 
 ## 8. Equipe
 
-* **[Vinicius Leopoldino de Oliveira]** - RM [557047]
-* **[Pablo Lopes Doria de Andrade]** - RM [556834]
+* **Vinicius Leopoldino de Oliveira** - RM 557047
+* **Pablo Lopes Doria de Andrade** - RM 556834
 
-```

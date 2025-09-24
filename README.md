@@ -184,8 +184,9 @@ Remove a moto com o ID especificado.
 curl -X DELETE http://<IP_DA_SUA_APP>:8080/api/motos/1
 ```
 
-## 8. Autor
+## 8. Equipe
 
-* **[Seu Nome Completo]** - RM [Seu RM]
+* **[Vinicius Leopoldino de Oliveira]** - RM [557047]
+* **[Pablo Lopes Doria de Andrade]** - RM [556834]
 
 ```

@@ -30,7 +30,7 @@ O fluxo da solução segue as práticas modernas de DevOps e Cloud Computing:
 |  Desenvolvedor|----->|     GitHub     |----->|      Azure       |
 |               |      | (Código Fonte) |      | (Nuvem/Cloud)    |
 +---------------+      +----------------+      +------------------+
-      |                                              |
+      |                                                |
       | 1. Desenvolve o código e o Dockerfile          | 5. Executa os scripts de deploy (ACI)
       | 2. Envia para o GitHub (push)                  |
       |                                                V
@@ -91,7 +91,7 @@ Siga os passos abaixo no seu terminal local (PowerShell recomendado) para implan
 
 ### Passo 1: Clone o Repositório
 ```powershell
-git clone <URL_DO_SEU_REPOSITORIO>
+git clone https://github.com/ViniciusLeopoldino/sprint3-devops.git
 cd mottu-control
 ```
 
@@ -102,18 +102,18 @@ O script a seguir automatiza todo o processo. Copie o bloco inteiro, cole no seu
 
 ```powershell
 # ===================================================================
-# ROTEIRO FINAL E DEFINITIVO COM POSTGRESQL
+# ROTEIRO COM POSTGRESQL
 # ===================================================================
 
-# ----- Bloco de Variáveis (configure aqui) -----
+# ----- Bloco de Variáveis (AJUSTE AS CONFIGURAÇÕES DE NOME UNICO E SENHA) -----
 $env:RESOURCE_GROUP="rg-mottu-fiap"
 $env:LOCATION="brazilsouth"
-$env:ACR_NAME="acrmottu<seu-nome-unico>" # Ex: acrmottuvini123
+$env:ACR_NAME="acrmottu<seu-nome-unico>" # Ex: acrmottu2025
 $env:APP_CONTAINER_NAME="java-app-mottu"
 $env:POSTGRES_CONTAINER_NAME = "postgres-db-mottu"
 $env:POSTGRES_DB = "mottudb"
 $env:POSTGRES_USER = "mottuadmin"
-$env:POSTGRES_PASSWORD = "SuaSenhaForte123" # <-- TROQUE ESTA SENHA
+$env:POSTGRES_PASSWORD = "SuaSenhaForte123" # <-- INCLUIR A SENHA AQUI
 
 # ----- PASSO 1: Criar Recursos Base -----
 Write-Host "Criando Grupo de Recursos e Azure Container Registry..."

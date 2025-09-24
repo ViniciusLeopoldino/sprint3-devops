@@ -90,8 +90,8 @@ Siga os passos abaixo para implantar e testar a solução.
 
 ### Passo 1: Clone o Repositório
 ```powershell
-git clone <URL_DO_SEU_REPOSITORIO>
-cd mottu-control
+git clone https://github.com/ViniciusLeopoldino/sprint3-devops.git
+cd sprint3-devops
 ```
 
 ### Passo 2: Execute o Script de Deploy
@@ -172,7 +172,7 @@ Use uma ferramenta como o **DBeaver** ou pgAdmin para se conectar ao banco.
 * **Porta:** `5432`
 * **Banco de Dados:** `mottudb`
 * **Usuário:** `mottuadmin`
-* **Senha:** A senha que você definiu no script.
+* **Senha:** `mottu280595`
 
 ## 8. Como Testar a API com o Postman
 

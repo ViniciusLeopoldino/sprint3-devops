@@ -200,7 +200,13 @@ Use a URL da API retornada no Passo 2 para montar as requisições no Postman.
 * **URL:** `http://<IP_DA_SUA_APP>:8080/api/motos/1` (substitua `1` por um ID existente)
 * **Resultado Esperado:** Status `204 No Content`.
 
-## 9. Autor
+## 9. Limpar os recursos da Azure
+
+```terminal
+az group delete --name $env:RESOURCE_GROUP --yes --no-wait
+```
+
+## 10. Equipe
 
 * **Vinicius Leopoldino de Oliveira** - RM 557047
 * **Pablo Lopes Doria de Andrade** - RM 556834

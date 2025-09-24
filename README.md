@@ -95,9 +95,9 @@ cd sprint3-devops
 ```
 
 ### Passo 2: Execute o Script de Deploy
-O script a seguir automatiza a criação de toda a infraestrutura. Copie o bloco inteiro, **substitua o valor da variável `$env:POSTGRES_PASSWORD` pela sua senha escolhida** e execute no seu terminal PowerShell.
+O script a seguir automatiza a criação de toda a infraestrutura. Copie o bloco inteiro e execute no seu terminal.
 
-```powershell
+```terminal
 # ===================================================================
 # ROTEIRO DE DEPLOY - PROJETO MOTTU CONTROL
 # ===================================================================
@@ -143,32 +143,14 @@ az container create --resource-group $env:RESOURCE_GROUP --name $env:APP_CONTAIN
 # ----- 6. Mensagem de Conclusão -----
 Write-Host "------------------------------------------------------------"
 Write-Host "✅ Infraestrutura implantada com sucesso!"
-Write-Host "Aguarde cerca de 2 minutos para a aplicação iniciar completamente antes de obter o IP."
+Write-Host "Obtenha os IPs da aplicação e banco de dados nos retornos acima."
 Write-Host "------------------------------------------------------------"
 ```
-
-### Passo 3: Obtenha os IPs e Inicie os Testes
-
-Após o script acima terminar, aguarde 2 minutos e execute os comandos abaixo para obter os IPs públicos dos seus containers.
-
-**Obter IP da Aplicação (API):**
-```powershell
-$APP_IP = $(az container show --resource-group $env:RESOURCE_GROUP --name $env:APP_CONTAINER_NAME --query ipAddress.ip --output tsv)
-Write-Host "URL da API para usar no Postman: http://$APP_IP:8080/api/motos"
-```
-
-**Obter IP do Banco de Dados (PostgreSQL):**
-```powershell
-$POSTGRES_IP = $(az container show --resource-group $env:RESOURCE_GROUP --name $env:POSTGRES_CONTAINER_NAME --query ipAddress.ip --output tsv)
-Write-Host "IP do Banco de Dados para usar no DBeaver: $POSTGRES_IP"
-```
-
-Agora, use esses IPs para testar sua solução conforme descrito nas seções abaixo.
 
 ## 7. Acessando o Banco de Dados (PostgreSQL)
 
 Use uma ferramenta como o **DBeaver** ou pgAdmin para se conectar ao banco.
-* **Host/Servidor:** O IP obtido no Passo 3.
+* **Host/Servidor:** O IP obtido no Passo 2.
 * **Porta:** `5432`
 * **Banco de Dados:** `mottudb`
 * **Usuário:** `mottuadmin`
@@ -176,7 +158,7 @@ Use uma ferramenta como o **DBeaver** ou pgAdmin para se conectar ao banco.
 
 ## 8. Como Testar a API com o Postman
 
-Use a URL da API retornada no Passo 3 para montar as requisições no Postman.
+Use a URL da API retornada no Passo 2 para montar as requisições no Postman.
 
 ---
 ### **CREATE (POST)** - Criar uma nova moto
